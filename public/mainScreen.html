@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Sets the viewport width and height for the page -->
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>Main Screen</title>
+
+    <!-- Link to the Roboto font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Link to the socket.io JavaScript library -->
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        /* Styling the body element */
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 50px;
+            background: #f2f2f2;
+            transition: background-color 0.5s ease;
+        }
+
+        /* Styling the color text */
+        #colorText {
+            font-size: 48px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body id="mainBody">
+    <!-- Toast, shows a "Color updated" message -->
+    <div id="toast" style="visibility: hidden; position: fixed; bottom: 10%; left: 50%; transform: translateX(-50%); background-color: #333; color: white; padding: 10px 20px; border-radius: 5px;">
+        Color updated
+    </div>
+
+    <!-- Main text indicating which color is currently selected -->
+    <span id="colorText">Choose a color</span>
+
+    <script>
+        /* Initialize a connection to the server using Socket.io */
+        const socket = io.connect();
+        
+        /* Log a message when connected to the server */
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+
+        /* Function to display a toast message */
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.style.visibility = 'visible';
+            setTimeout(() => {
+                toast.style.visibility = 'hidden';
+            }, 2000);
+        }
+
+        /* Listen for color update events from the server */
+        socket.on('updateColor', (data) => {
+            const bodyElem = document.getElementById('mainBody');
+            const textElem = document.getElementById('colorText');
+
+            bodyElem.style.backgroundColor = data.color.toLowerCase();
+            textElem.textContent = data.color;
+
+            // Store the color in localStorage
+            localStorage.setItem('selectedColor', data.color);
+
+            showToast();
+        });
+
+        /* Check for stored color in localStorage on page load */
+        document.addEventListener('DOMContentLoaded', () => {
+            const storedColor = localStorage.getItem('selectedColor');
+            const bodyElem = document.getElementById('mainBody');
+            const textElem = document.getElementById('colorText');
+
+            if (storedColor) {
+                bodyElem.style.backgroundColor = storedColor.toLowerCase();
+                textElem.textContent = storedColor;
+            }
+        });
+
+        /* Listen for reset events from the server */
+        socket.on('resetToDefaultState', () => {
+            // console.log('Received resetToDefaultState event');
+            const bodyElem = document.getElementById('mainBody');
+            const textElem = document.getElementById('colorText');
+            
+            // Reset the background color to default
+            bodyElem.style.backgroundColor = 'white'; // Or whatever the default color is
+
+            // Set the text to "Choose a color"
+            textElem.textContent = 'Choose a color';
+
+            // Clear the color from localStorage
+            localStorage.removeItem('selectedColor');
+        });
+
+    </script>
+</body>
+</html>

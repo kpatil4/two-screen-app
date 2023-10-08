@@ -1,0 +1,17 @@
+{
+  "name": "two_screen_app_v1",
+  "version": "1.0.0",
+  "description": "A two-screen app that allows a user to select a color on one screen and displays the selected color on another screen.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Ketan Patil",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  }
+}

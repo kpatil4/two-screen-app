@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!--This meta tag specifies the viewport dimensions of the HTML document. The browser will render the document to a width of 1194 pixels and a height of 834 pixels.-->
+    <meta name="viewport" content="width=1194, height=834">
+    <title>Touch Screen</title>
+    <!-- Importing the Roboto font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Including the socket.io library for real-time communication -->
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        /* Styling for the main body of the touch screen */
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100vh;
+            margin: 50px;
+            background: #f2f2f2;
+        }
+
+        /* Styling for color selection divs (Blue, Red, Yellow) */
+        div {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 45px;
+            font-weight: bold;
+            border-radius: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0px 10px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Hover and Active effects for the color selection divs */
+        div:hover {
+            transform: scale(1.05);
+        }
+        div:active {
+            transform: scale(0.95);
+        }
+
+        /* Specific background styles for each color div */
+        #blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+        #red { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        #yellow { background: linear-gradient(135deg, #f1c40f, #f39c12); }
+
+        /* Styling for the click count dashboard */
+        #dashboard {
+            position: fixed; /* Fixed positioning */
+            left: 50%; /* Horizontally center the element */
+            bottom: 5%; /* Position at the bottom of the viewport */
+            transform: translateX(-50%); /* Adjust for horizontal centering */
+            background-color: #f0f0f0; /* Background color for the dashboard */
+            padding: 20px; /* Add padding for content */
+            font-size: 24px;
+        }
+
+        /* Styling for the 'Reset Main Screen' and 'Refresh' buttons */
+        #resetBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            font-family: 'Roboto', sans-serif;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #resetBtn:hover {
+            background-color: #555;
+        }
+
+        #refreshBtn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            font-family: 'Roboto', sans-serif;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 16px;
+        }
+        #refreshBtn:hover {
+            background-color: #555;
+        }
+
+        /* Styling adjustments based on different screen sizes (Responsive Design) */
+        /* Mobile Devices */
+        @media only screen and (max-width: 480px) {
+            body {
+                flex-direction: column;
+            }
+            div {
+                margin-bottom: 20px;
+                width: 80%;
+                height: 80px;
+            }
+        }
+
+        /* Tablet and above */
+        @media only screen and (min-width: 1194px) {
+            body {
+                flex-direction: row;
+            }
+
+            div {
+                margin: 0 10px;
+                width: initial;
+                height: 120px;
+            }
+        }
+
+        /* Desktop and larger screens */
+        @media only screen and (min-width: 1920px) {
+            div {
+                height: 150px;
+            }
+        }
+    </style>
+    
+</head>
+<body>
+    <!-- Refresh button to reload the touch screen page -->
+    <button id="refreshBtn" title="Reset Color Count">&#x21bb;</button>
+
+    <!-- Button to send a command to reset the main display to its default state -->
+    <button id="resetBtn">Reset Main Screen</button>
+    
+    <!-- Color selection divs -->
+    <div id="blue" onclick="setColor('Blue')">Blue</div>
+    <div id="red" onclick="setColor('Red')">Red</div>
+    <div id="yellow" onclick="setColor('Yellow')">Yellow</div>
+
+    <!-- Dashboard displaying the click count for each color -->
+    <div id="dashboard">
+        <table>
+            <tr><td>Blue:</td><td id="blueCount">0</td></tr>
+            <tr><td>Red:</td><td id="redCount">0</td></tr>
+            <tr><td>Yellow:</td><td id="yellowCount">0</td></tr>
+        </table>
+    </div>    
+
+    <script>
+        // Initialize a socket connection
+        const socket = io.connect();
+
+        // Function to refresh the page when the refresh button is clicked
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            location.reload();
+        });
+
+        // Log when successfully connected to the server
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+
+        // Function to update the click count on the dashboard
+        function incrementCounter(color) {
+            const colorCount = document.getElementById(color.toLowerCase() + 'Count');
+            colorCount.textContent = parseInt(colorCount.textContent, 10) + 1;
+        }
+
+        // Function to emit the chosen color to the server and update the click count
+        function setColor(color) {
+            socket.emit('colorChange', { color: color });
+            incrementCounter(color);
+        }
+
+        // Function to emit the reset command to the server when the reset button is clicked
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            // console.log('Emitting resetMainScreenToDefault');
+            socket.emit('resetMainScreenToDefault');
+        });
+    </script>
+</body>
+</html>
